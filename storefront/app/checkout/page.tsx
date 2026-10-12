@@ -1,62 +1,66 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ShieldCheck, Lock } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
+import { CheckoutViewClient } from "@/components/checkout/CheckoutViewClient";
 
-export const metadata = {
-  title: "Checkout | COCO-VANTAGE",
-  description: "Secure order checkout demonstration.",
+export const metadata: Metadata = {
+  title: "Checkout",
+  description: "Complete your COCO-VANTAGE botanical cinnamon formulation order.",
 };
 
 export default function CheckoutPage() {
   return (
     <div className="flex min-h-screen flex-col bg-[#F5F5F2] text-[#111111] antialiased">
+      {/* 1. Global Announcement Bar */}
       <AnnouncementBar />
+
+      {/* 2. Global Navigation */}
       <Navigation />
 
-      <main className="flex-1 flex items-center justify-center py-20 sm:py-28 px-6 lg:px-12">
-        <div className="max-w-lg w-full text-center space-y-8 border border-[#E5E5E5] bg-white p-10 sm:p-14 shadow-xs">
-          <div className="mx-auto flex size-14 items-center justify-center border border-[#111111] bg-[#F5F5F2]">
-            <Lock className="size-6 text-[#111111]" />
+      <main className="flex-1">
+        {/* Breadcrumb Navigation */}
+        <section
+          aria-label="Breadcrumb"
+          className="w-full border-b border-[#E5E5E5] bg-[#F5F5F2]"
+        >
+          <div className="mx-auto max-w-7xl px-6 py-4 lg:px-12">
+            <nav className="flex items-center space-x-2 text-xs font-mono uppercase tracking-widest text-[#777777]">
+              <Link href="/" className="hover:text-[#111111] transition-colors">
+                Home
+              </Link>
+              <ChevronRight className="size-3 text-[#777777]" />
+              <Link href="/cart" className="hover:text-[#111111] transition-colors">
+                Cart
+              </Link>
+              <ChevronRight className="size-3 text-[#777777]" />
+              <span className="text-[#111111] font-semibold">Checkout</span>
+            </nav>
           </div>
+        </section>
 
-          <div className="space-y-3">
-            <p className="text-xs font-mono uppercase tracking-[0.25em] text-[#777777]">
-              Step 2 of 2 · Checkout
-            </p>
-            <h1 className="text-3xl sm:text-4xl font-light uppercase tracking-tight text-[#111111]">
-              CHECKOUT SYSTEM
-            </h1>
-            <p className="text-sm text-[#777777] leading-relaxed max-w-md mx-auto">
-              The secure payment and customer shipping pipeline is scheduled for implementation in the next phase. No real transactions or card charges are processed in this demonstration environment.
-            </p>
-          </div>
+        {/* Checkout Main Section */}
+        <section className="w-full py-12 sm:py-16 lg:py-20">
+          <div className="mx-auto max-w-7xl px-6 lg:px-12 space-y-10">
+            {/* Header */}
+            <div className="space-y-2 border-b border-[#E5E5E5] pb-6">
+              <p className="text-xs font-mono uppercase tracking-[0.25em] text-[#777777]">
+                Order Finalization
+              </p>
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light uppercase tracking-tight text-[#111111]">
+                CHECKOUT
+              </h1>
+            </div>
 
-          <div className="border border-[#E5E5E5] bg-[#F5F5F2] p-4 text-[11px] font-mono text-[#777777] flex items-center justify-center gap-2">
-            <ShieldCheck className="size-4 text-[#111111]" />
-            <span>Architecture Specification · Ready for Medusa / Stripe Integration</span>
+            {/* Interactive Checkout Client Component */}
+            <CheckoutViewClient />
           </div>
-
-          <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-            <Link
-              href="/cart"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-1/2 h-12 border border-[#E5E5E5] text-[#111111] uppercase tracking-widest text-xs font-semibold hover:border-[#111111] transition-colors"
-            >
-              <ArrowLeft className="size-3.5" />
-              <span>RETURN TO CART</span>
-            </Link>
-            <Link
-              href="/shop"
-              className="inline-flex items-center justify-center gap-2 w-full sm:w-1/2 h-12 bg-[#111111] text-white uppercase tracking-widest text-xs font-semibold hover:bg-black transition-colors"
-            >
-              <span>EXPLORE SHOP</span>
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
-        </div>
+        </section>
       </main>
 
+      {/* Global Footer */}
       <Footer />
     </div>
   );
