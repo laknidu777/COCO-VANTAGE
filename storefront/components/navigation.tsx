@@ -66,8 +66,8 @@ export function Navigation() {
           >
             <User className="size-4.5" />
           </button>
-          <button
-            type="button"
+          <Link
+            href="/cart"
             aria-label={`Shopping bag, ${totalCount} items`}
             className="relative p-1.5 text-[#111111] hover:text-[#777777] transition-colors"
           >
@@ -75,7 +75,7 @@ export function Navigation() {
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-black text-[9px] font-mono font-semibold text-white">
               {totalCount}
             </span>
-          </button>
+          </Link>
 
           {/* Mobile Menu Button */}
           <button
