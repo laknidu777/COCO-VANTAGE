@@ -31,6 +31,8 @@ export const metadata: Metadata = {
   authors: [{ name: "COCO-VANTAGE" }],
 };
 
+import { CartProvider } from "@/lib/cart-context";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,7 +45,9 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground tracking-tight" suppressHydrationWarning>
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   );

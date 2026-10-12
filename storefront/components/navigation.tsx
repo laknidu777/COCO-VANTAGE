@@ -3,9 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Search, User, ShoppingBag, Menu, X } from "lucide-react";
+import { useCart } from "@/lib/cart-context";
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { totalCount } = useCart();
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#F5F5F2]/90 backdrop-blur-md border-b border-[#E5E5E5] transition-all">
@@ -66,12 +68,12 @@ export function Navigation() {
           </button>
           <button
             type="button"
-            aria-label="Shopping bag, 0 items"
+            aria-label={`Shopping bag, ${totalCount} items`}
             className="relative p-1.5 text-[#111111] hover:text-[#777777] transition-colors"
           >
             <ShoppingBag className="size-4.5" />
             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-black text-[9px] font-mono font-semibold text-white">
-              0
+              {totalCount}
             </span>
           </button>
 
