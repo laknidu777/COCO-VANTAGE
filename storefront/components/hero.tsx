@@ -26,7 +26,7 @@ export function Hero() {
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
               <Link
-                href="#collection"
+                href="/shop"
                 className="inline-flex h-13 items-center justify-center gap-2 px-8 bg-[#111111] text-white hover:bg-black uppercase tracking-widest text-xs font-medium transition-all duration-200 border border-[#111111]"
               >
                 <span>EXPLORE THE COLLECTION</span>

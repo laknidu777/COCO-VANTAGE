@@ -30,22 +30,22 @@ export function Footer() {
             </h4>
             <ul className="space-y-2.5 text-xs text-[#777777]">
               <li>
-                <Link href="#collection" className="hover:text-white transition-colors">
+                <Link href="/shop" className="hover:text-white transition-colors">
                   All Formulations
                 </Link>
               </li>
               <li>
-                <Link href="#collection" className="hover:text-white transition-colors">
+                <Link href="/products/charcoal-cinnamon-powder" className="hover:text-white transition-colors">
                   Charcoal Cinnamon Powder
                 </Link>
               </li>
               <li>
-                <Link href="#collection" className="hover:text-white transition-colors">
-                  Charcoal Cinnamon Sticks
+                <Link href="/products/premium-cinnamon-sticks" className="hover:text-white transition-colors">
+                  Premium Cinnamon Sticks
                 </Link>
               </li>
               <li>
-                <Link href="#collection" className="hover:text-white transition-colors">
+                <Link href="/products/signature-cinnamon-blend" className="hover:text-white transition-colors">
                   Signature Cinnamon Blend
                 </Link>
               </li>

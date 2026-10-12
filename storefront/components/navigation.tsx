@@ -23,25 +23,25 @@ export function Navigation() {
         {/* Center / Desktop Links */}
         <div className="hidden md:flex items-center space-x-10">
           <Link
-            href="#collection"
+            href="/shop"
             className="text-xs uppercase tracking-[0.2em] font-medium text-[#111111] hover:text-[#777777] transition-colors"
           >
             Shop
           </Link>
           <Link
-            href="#story"
+            href="/#story"
             className="text-xs uppercase tracking-[0.2em] font-medium text-[#111111] hover:text-[#777777] transition-colors"
           >
             Our Story
           </Link>
           <Link
-            href="#process"
+            href="/#process"
             className="text-xs uppercase tracking-[0.2em] font-medium text-[#111111] hover:text-[#777777] transition-colors"
           >
             The Process
           </Link>
           <Link
-            href="#contact"
+            href="/#contact"
             className="text-xs uppercase tracking-[0.2em] font-medium text-[#111111] hover:text-[#777777] transition-colors"
           >
             Contact
@@ -93,7 +93,7 @@ export function Navigation() {
         <div className="md:hidden border-t border-[#E5E5E5] bg-[#F5F5F2] px-6 py-8 space-y-6 animate-in slide-in-from-top-2 duration-200">
           <div className="flex flex-col space-y-5 text-sm uppercase tracking-[0.25em] font-medium">
             <Link
-              href="#collection"
+              href="/shop"
               onClick={() => setMobileMenuOpen(false)}
               className="text-[#111111] hover:text-[#777777] transition-colors py-1"
             >

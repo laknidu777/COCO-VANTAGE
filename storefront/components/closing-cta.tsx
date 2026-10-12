@@ -23,7 +23,7 @@ export function ClosingCta() {
 
         <div className="pt-4 flex justify-center">
           <Link
-            href="#collection"
+            href="/shop"
             className="inline-flex h-13 items-center justify-center gap-2 px-10 bg-[#FFFFFF] text-[#000000] hover:bg-[#F5F5F2] uppercase tracking-[0.2em] text-xs font-semibold transition-all duration-200 border border-[#FFFFFF]"
           >
             <span>SHOP THE COLLECTION</span>
