@@ -57,25 +57,29 @@ model Product {
 }
 
 model ProductVariant {
-  id          String        @id @default(uuid()) @db.Uuid
-  productId   String        @db.Uuid
-  sku         String        @unique @db.VarChar(80)
-  name        String        @db.VarChar(160)
-  sizeValue   Decimal?      @db.Decimal(10, 3)
-  sizeUnit    String?       @db.VarChar(20)
-  weightGrams Int?
-  barcode     String?       @unique @db.VarChar(80)
-  isDefault   Boolean       @default(false)
-  isActive    Boolean       @default(true)
-  product     Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
-  prices      VariantPrice[]
-  images      ProductImage[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id                 String         @id @default(uuid()) @db.Uuid
+  productId          String         @db.Uuid
+  sku                String         @unique @db.VarChar(80)
+  name               String         @db.VarChar(160)
+  sizeValue          Decimal?       @db.Decimal(10, 3)
+  sizeUnit           String?        @db.VarChar(20)
+  weightGrams        Int?
+  barcode            String?        @unique @db.VarChar(80)
+  isDefault          Boolean        @default(false)
+  isActive           Boolean        @default(true)
+  stockQuantity      Int            @default(0)
+  lowStockThreshold  Int            @default(5)
+
+  product            Product        @relation(fields: [productId], references: [id], onDelete: Restrict)
+  prices             VariantPrice[]
+  images             ProductImage[]
+  cartItems          CartItem[]
+
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
 
   @@index([productId, isActive])
 }
-
 model ProductImage {
   id        String         @id @default(uuid()) @db.Uuid
   productId String         @db.Uuid
@@ -141,4 +145,29 @@ model AdminUser {
   updatedAt    DateTime  @updatedAt
 
   @@index([isActive])
+}
+model Cart {
+  id        String     @id @default(uuid()) @db.Uuid
+  tokenHash String     @unique @db.VarChar(64)
+  currency  String     @default("USD") @db.VarChar(3)
+  items     CartItem[]
+  expiresAt DateTime
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([expiresAt])
+}
+
+model CartItem {
+  id        String        @id @default(uuid()) @db.Uuid
+  cartId    String        @db.Uuid
+  variantId String        @db.Uuid
+  quantity  Int
+  cart      Cart          @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([variantId])
 }
