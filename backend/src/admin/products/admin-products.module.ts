@@ -9,7 +9,6 @@ import { AdminProductImagesController } from './admin-product-images.controller'
 import { AdminProductImagesService } from './admin-product-images.service';
 import { AdminInventoryController } from './admin-inventory.controller';
 import { AdminInventoryService } from './admin-inventory.service';
-
 @Module({
   imports: [PrismaModule],
   controllers: [
