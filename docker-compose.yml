@@ -43,6 +43,28 @@ services:
       database:
         condition: service_healthy
 
+
+  storefront:
+    build:
+      context: ./storefront
+      dockerfile: Dockerfile
+    container_name: coco-vantage-storefront
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./storefront:/app
+      - storefront_node_modules:/app/node_modules
+      - storefront_next:/app/.next
+    depends_on:
+      - backend
+
 volumes:
   coco_vantage_postgres_data:
   backend_node_modules:
+  storefront_node_modules:
+  storefront_next:
