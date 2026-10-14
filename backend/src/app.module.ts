@@ -8,7 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { AdminProductsModule } from './admin/products/admin-products.module';
 import { CartModule } from './cart/cart.module';
 import { AdminOrdersModule } from './admin/orders/admin-orders.module';
-
+import { CheckoutModule } from './checkout/checkout.module';
+import { StripeModule } from './stripe/stripe.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -20,6 +21,8 @@ import { AdminOrdersModule } from './admin/orders/admin-orders.module';
     AdminProductsModule,
     CartModule,
     AdminOrdersModule,
+    CheckoutModule,
+    StripeModule,
   ],
 })
 export class AppModule { }
