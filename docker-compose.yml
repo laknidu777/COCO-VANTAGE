@@ -1,0 +1,48 @@
+
+services:
+  database:
+    image: postgres:16
+    container_name: coco-vantage-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: coco_vantage
+      POSTGRES_USER: coco_vantage
+      POSTGRES_PASSWORD: local_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - coco_vantage_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coco_vantage -d coco_vantage"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: coco-vantage-backend
+    restart: unless-stopped
+    working_dir: /app/backend
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      PORT: "4000"
+      DATABASE_URL: postgresql://coco_vantage:local_dev_password@database:5432/coco_vantage
+      STOREFRONT_URL: http://localhost:3000
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./backend:/app/backend
+      - ./prisma:/app/prisma
+      - ./prisma.config.ts:/app/prisma.config.ts
+      - backend_node_modules:/app/backend/node_modules
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  coco_vantage_postgres_data:
+  backend_node_modules:
