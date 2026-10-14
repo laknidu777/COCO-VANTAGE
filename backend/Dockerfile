@@ -17,13 +17,13 @@ COPY backend ./backend
 WORKDIR /app/backend
 
 
-# Install dotenv for the root Prisma configuration.
-RUN npm install --no-save --package-lock=false dotenv
+# Generate Prisma Client using the existing root Prisma configuration.
+# Install dotenv where the root configuration can resolve it.
+RUN npm install --prefix /app/backend --no-save --package-lock=false dotenv
 
-# Generate Prisma Client without connecting to a real database.
 RUN DATABASE_URL="postgresql://build_only:build_only@localhost:5432/build_only" \
-    npx prisma generate --schema=../prisma/schema.prisma
-
+    NODE_PATH=/app/backend/node_modules \
+    npx prisma generate --config /app/prisma.config.ts
 
 EXPOSE 4000
 
