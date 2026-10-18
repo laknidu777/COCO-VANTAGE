@@ -1,19 +1,20 @@
-
 services:
   database:
     image: postgres:16
     container_name: coco-vantage-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: coco_vantage
-      POSTGRES_USER: coco_vantage
-      POSTGRES_PASSWORD: local_dev_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      # Port 5433 published to host machine (5433:5432) for host-side database inspection tools
+      # (e.g. TablePlus, DBeaver) avoiding conflict with any local PostgreSQL instance on 5432.
+      - "5433:5432"
     volumes:
       - coco_vantage_postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U coco_vantage -d coco_vantage"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,34 +26,53 @@ services:
     container_name: coco-vantage-backend
     restart: unless-stopped
     working_dir: /app/backend
-    env_file:
-      - .env
     environment:
-      NODE_ENV: development
-      PORT: "4000"
-      DATABASE_URL: postgresql://coco_vantage:local_dev_password@database:5432/coco_vantage
-      STOREFRONT_URL: http://localhost:3000
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-4000}
+      HOST: ${HOST:-0.0.0.0}
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STOREFRONT_URL: ${STOREFRONT_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      API_PREFIX: ${API_PREFIX:-api/v1}
+      SWAGGER_PATH: ${SWAGGER_PATH:-api/docs}
+      SWAGGER_ENABLED: ${SWAGGER_ENABLED:-true}
     ports:
       - "4000:4000"
     volumes:
       - ./backend:/app/backend
       - ./prisma:/app/prisma
       - ./prisma.config.ts:/app/prisma.config.ts
+      - ./.env:/app/.env:ro
       - backend_node_modules:/app/backend/node_modules
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:4000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     depends_on:
       database:
         condition: service_healthy
-
 
   storefront:
     build:
       context: ./storefront
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
     container_name: coco-vantage-storefront
     restart: unless-stopped
     working_dir: /app
     environment:
-      NODE_ENV: development
+      # Explicit environment isolation: Storefront receives ONLY public & frontend settings.
+      # Private server secrets (DATABASE_URL, STRIPE_SECRET_KEY, JWT_ACCESS_SECRET) are NOT injected.
+      NODE_ENV: ${NODE_ENV:-development}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
+      INTERNAL_API_URL: ${INTERNAL_API_URL:-http://backend:4000}
       NEXT_TELEMETRY_DISABLED: "1"
     ports:
       - "3000:3000"
@@ -61,7 +81,8 @@ services:
       - storefront_node_modules:/app/node_modules
       - storefront_next:/app/.next
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
 
 volumes:
   coco_vantage_postgres_data:

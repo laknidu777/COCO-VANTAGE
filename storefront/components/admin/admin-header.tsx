@@ -95,7 +95,7 @@ export function AdminHeader({
           />
           <span className="text-[#111111] hidden lg:inline">
             {backendStatus === 'online'
-              ? 'Backend API 4000: Live'
+              ? 'Backend API: Live'
               : backendStatus === 'checking'
               ? 'Connecting...'
               : 'Backend Offline'}

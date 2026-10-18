@@ -25,16 +25,52 @@ export class ApiError extends Error {
 }
 
 /**
- * Resolves the backend base URL.
- * - When running on the server in a containerized environment with INTERNAL_API_URL defined,
- *   it uses the internal container address (e.g. http://backend:4000).
- * - In the browser or local development, it uses NEXT_PUBLIC_API_URL (defaults to http://localhost:4000).
+ * Resolves the correct backend base URL depending on the execution context.
+ *
+ * Two separate URLs are required because code runs in two different network
+ * environments:
+ *
+ *   SERVER (Next.js Node process inside Docker):
+ *     Cannot use localhost — must use the Docker bridge hostname.
+ *     → reads INTERNAL_API_URL (e.g. "http://backend:4000")
+ *
+ *   BROWSER (client-side React code on the user's machine):
+ *     Cannot see Docker-internal hostnames — must use the host-forwarded port.
+ *     → reads NEXT_PUBLIC_API_URL (e.g. "http://localhost:4000")
+ *
+ * Both variables are defined once in the root .env file and injected by
+ * docker-compose. No URL is ever hardcoded here.
  */
 export function getApiBaseUrl(): string {
-  if (typeof window === 'undefined' && process.env.INTERNAL_API_URL) {
-    return process.env.INTERNAL_API_URL;
+  // Server-side: running inside the Docker bridge network (or server runtime)
+  if (typeof window === 'undefined') {
+    const internalUrl = process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL;
+    if (!internalUrl) {
+      throw new Error(
+        '[api-client] Neither INTERNAL_API_URL nor NEXT_PUBLIC_API_URL is set. ' +
+          'Configure them in the root .env file.',
+      );
+    }
+    return internalUrl;
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+  // Client-side: running in the user's browser.
+  const publicUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!publicUrl) {
+    throw new Error(
+      '[api-client] NEXT_PUBLIC_API_URL is not set. ' +
+        'Configure NEXT_PUBLIC_API_URL in your root .env file (e.g. NEXT_PUBLIC_API_URL=http://localhost:4000).',
+    );
+  }
+
+  // Security guard: Never expose Docker-internal hostnames to browser JavaScript
+  if (publicUrl.includes('://backend') || publicUrl.includes('://database')) {
+    throw new Error(
+      '[api-client] Security error: NEXT_PUBLIC_API_URL must be a browser-reachable URL, not an internal Docker hostname.',
+    );
+  }
+
+  return publicUrl;
 }
 
 export const API_PREFIX = '/api/v1';

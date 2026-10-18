@@ -23,15 +23,35 @@ export class EnvironmentVariables {
   PORT: number = 4000;
 
   @IsString()
+  @IsOptional()
+  HOST: string = '0.0.0.0';
+
+  @IsString()
   DATABASE_URL: string;
 
   @IsString()
   @IsOptional()
-  FRONTEND_URL: string = 'http://localhost:3000';
+  JWT_ACCESS_SECRET?: string;
 
   @IsString()
   @IsOptional()
-  CORS_ORIGIN: string = 'http://localhost:3000';
+  STRIPE_SECRET_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  STRIPE_WEBHOOK_SECRET?: string;
+
+  @IsString()
+  @IsOptional()
+  STOREFRONT_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  FRONTEND_URL?: string;
+
+  @IsString()
+  @IsOptional()
+  CORS_ORIGIN?: string;
 
   @IsString()
   @IsOptional()
@@ -40,6 +60,10 @@ export class EnvironmentVariables {
   @IsString()
   @IsOptional()
   SWAGGER_PATH: string = 'api/docs';
+
+  @IsString()
+  @IsOptional()
+  SWAGGER_ENABLED?: string;
 }
 
 export function validate(config: Record<string, unknown>) {
@@ -63,6 +87,46 @@ export function validate(config: Record<string, unknown>) {
     throw new Error(
       `Environment configuration validation error: ${errorMessages}`,
     );
+  }
+
+  // Validate DATABASE_URL format without leaking credentials
+  const dbUrl = validatedConfig.DATABASE_URL;
+  if (!dbUrl || (!dbUrl.startsWith('postgresql://') && !dbUrl.startsWith('postgres://'))) {
+    throw new Error(
+      'Environment configuration validation error: DATABASE_URL must be a valid PostgreSQL connection URI starting with postgresql:// or postgres://',
+    );
+  }
+
+  // Production-specific security assertions
+  if (validatedConfig.NODE_ENV === Environment.Production) {
+    if (
+      !validatedConfig.JWT_ACCESS_SECRET ||
+      validatedConfig.JWT_ACCESS_SECRET.length < 32 ||
+      validatedConfig.JWT_ACCESS_SECRET.includes('replace-with-a-random-secret')
+    ) {
+      throw new Error(
+        'Environment configuration validation error: JWT_ACCESS_SECRET must be at least 32 characters and cannot be the default placeholder in production.',
+      );
+    }
+
+    if (
+      !validatedConfig.STRIPE_SECRET_KEY ||
+      !validatedConfig.STRIPE_SECRET_KEY.startsWith('sk_')
+    ) {
+      throw new Error(
+        'Environment configuration validation error: STRIPE_SECRET_KEY is required and must have a valid Stripe format in production.',
+      );
+    }
+
+    if (
+      !validatedConfig.CORS_ORIGIN &&
+      !validatedConfig.FRONTEND_URL &&
+      !validatedConfig.STOREFRONT_URL
+    ) {
+      throw new Error(
+        'Environment configuration validation error: In production, at least one CORS origin must be configured via CORS_ORIGIN, FRONTEND_URL, or STOREFRONT_URL.',
+      );
+    }
   }
 
   return validatedConfig;

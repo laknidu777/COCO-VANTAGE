@@ -281,10 +281,11 @@ async createPaymentSession(orderId: string, email: string) {
 
   const stripe = this.stripeService.getClient();
 
-  const storefrontUrl = process.env.STOREFRONT_URL;
+  const storefrontUrl =
+    process.env.STOREFRONT_URL || process.env.FRONTEND_URL;
 
   if (!storefrontUrl) {
-    throw new Error('STOREFRONT_URL is missing.');
+    throw new Error('STOREFRONT_URL or FRONTEND_URL is missing.');
   }
 
   let baseUrl: string;

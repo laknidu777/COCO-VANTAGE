@@ -161,7 +161,7 @@ export default function AdminSettingsPage() {
           ) : null}
 
           <div className="p-3 bg-[#FBFBFA] border border-[#E5E5E5] text-[11px] font-mono text-[#555555] leading-relaxed">
-            Telemetry is fetched directly from the NestJS health controller at <code className="text-[#111111]">http://localhost:4000/health</code> without exposing sensitive environment keys.
+            Telemetry is fetched directly from the NestJS health controller at <code className="text-[#111111]">/health</code> endpoint without exposing sensitive environment keys.
           </div>
         </div>
 

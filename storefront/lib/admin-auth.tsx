@@ -108,7 +108,7 @@ export function AdminAuthProvider({
             setAuthError('Invalid administrator credentials.');
           } else if (err.statusCode === 0) {
             setAuthError(
-              'Cannot reach backend server. Please verify backend is running on port 4000.',
+              'Cannot reach backend server. Please verify backend is running and reachable.',
             );
           } else {
             setAuthError(err.message || 'Authentication failed.');

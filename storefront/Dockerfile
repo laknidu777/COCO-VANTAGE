@@ -10,6 +10,10 @@ RUN npm ci
 # Copy the storefront source code.
 COPY . .
 
+# Accept public API URL build argument for Next.js compilation
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # Next.js development server port.
 EXPOSE 3000
 

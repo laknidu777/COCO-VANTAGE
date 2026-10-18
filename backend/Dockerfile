@@ -1,5 +1,8 @@
-﻿
+
 FROM node:22-bookworm-slim
+
+# Install OpenSSL for Prisma engine binary compatibility in Debian Bookworm slim
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -17,13 +20,11 @@ COPY backend ./backend
 WORKDIR /app/backend
 
 
-# Generate Prisma Client using the existing root Prisma configuration.
-# Install dotenv where the root configuration can resolve it.
-RUN npm install --prefix /app/backend --no-save --package-lock=false dotenv
+# Link backend node_modules to /app so Prisma and root config resolve packages cleanly
+RUN ln -s /app/backend/node_modules /app/node_modules
 
-RUN DATABASE_URL="postgresql://build_only:build_only@localhost:5432/build_only" \
-    NODE_PATH=/app/backend/node_modules \
-    npx prisma generate --config /app/prisma.config.ts
+# Generate Prisma Client
+RUN npx prisma generate --schema=../prisma/schema.prisma
 
 EXPOSE 4000
 
