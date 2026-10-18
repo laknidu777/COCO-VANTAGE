@@ -54,6 +54,7 @@ export interface UnifiedCartItem {
 export type CartItem = UnifiedCartItem;
 
 interface CartContextType {
+  token: string | null;
   items: UnifiedCartItem[];
   cart: BackendCart | null;
   totalCount: number;
@@ -79,7 +80,16 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_TOKEN_STORAGE_KEY = "coco_vantage_cart_token_v1";
+export const CART_TOKEN_STORAGE_KEY = "coco_vantage_cart_token_v1";
+
+export function getStoredCartToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return localStorage.getItem(CART_TOKEN_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
 
 function mapBackendItemToUnified(
   item: BackendCartItem,
@@ -423,6 +433,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   return (
     <CartContext.Provider
       value={{
+        token,
         items,
         cart,
         totalCount,

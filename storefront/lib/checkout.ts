@@ -1,6 +1,6 @@
 export type CountryCode = "US" | "CA";
 
-export type DeliveryMethodId = "standard" | "express";
+export type DeliveryMethodId = "standard" | "priority";
 
 export interface DeliveryMethod {
   id: DeliveryMethodId;
@@ -13,21 +13,14 @@ export interface DeliveryMethod {
 export const DELIVERY_METHODS: DeliveryMethod[] = [
   {
     id: "standard",
-    name: "Standard Botanical Dispatch",
-    estimate: "3–5 business days",
-    rate: 8.0,
-    description: "Climate-calibrated courier dispatch with complete batch tracking.",
-  },
-  {
-    id: "express",
-    name: "Express Priority Courier",
-    estimate: "1–2 business days",
-    rate: 18.0,
-    description: "Expedited air transport with guaranteed priority handling.",
+    name: "Complimentary Botanical Dispatch",
+    estimate: "2–4 business days",
+    rate: 0.0,
+    description: "Climate-calibrated courier dispatch with complete batch provenance tracking.",
   },
 ];
 
-export type PaymentMethodId = "card" | "wallet" | "bank";
+export type PaymentMethodId = "stripe";
 
 export interface PaymentOption {
   id: PaymentMethodId;
@@ -37,19 +30,9 @@ export interface PaymentOption {
 
 export const PAYMENT_OPTIONS: PaymentOption[] = [
   {
-    id: "card",
-    title: "Credit or Debit Card",
-    subtitle: "Visa, Mastercard, American Express (Demonstration selection)",
-  },
-  {
-    id: "wallet",
-    title: "Digital Wallet",
-    subtitle: "Apple Pay, Google Pay (Demonstration selection)",
-  },
-  {
-    id: "bank",
-    title: "Direct Bank Transfer",
-    subtitle: "Wire or electronic transfer (Demonstration selection)",
+    id: "stripe",
+    title: "Stripe Secure Checkout",
+    subtitle: "Credit card, debit card, Apple Pay, and Google Pay via Stripe.",
   },
 ];
 
@@ -64,8 +47,16 @@ export interface CheckoutFormData {
   stateProvince: string;
   postalCode: string;
   country: CountryCode;
-  deliveryMethodId: DeliveryMethodId;
-  paymentMethodId: PaymentMethodId;
+  billingSameAsShipping: boolean;
+  billingFirstName: string;
+  billingLastName: string;
+  billingAddressLine1: string;
+  billingAddressLine2: string;
+  billingCity: string;
+  billingStateProvince: string;
+  billingPostalCode: string;
+  billingCountry: CountryCode;
+  customerNote: string;
 }
 
 export interface CheckoutCalculation {
@@ -76,35 +67,19 @@ export interface CheckoutCalculation {
 }
 
 /**
- * Reusable utility to compute checkout estimates.
- * Free standard shipping on merchandise subtotal >= $50.
- * Demonstrative tax rate of 7.5% (clearly marked as estimate).
+ * Computes checkout estimates matching the backend contract:
+ * - Shipping is complimentary ($0.00) across all formulations.
+ * - Tax is $0.00 at order creation (calculated/handled transparently).
+ * - Total equals merchandise subtotal server-authoritatively.
  */
 export function calculateCheckoutEstimates(
   subtotal: number,
-  deliveryMethodId: DeliveryMethodId
 ): CheckoutCalculation {
-  const method =
-    DELIVERY_METHODS.find((m) => m.id === deliveryMethodId) ||
-    DELIVERY_METHODS[0];
-
-  // Complimentary standard shipping on subtotal >= 50
-  let shippingEstimate = method.rate;
-  if (method.id === "standard" && subtotal >= 50) {
-    shippingEstimate = 0.0;
-  }
-
-  // Provisional demonstrative tax estimate (7.5%)
-  const taxEstimate = subtotal > 0 ? Number((subtotal * 0.075).toFixed(2)) : 0;
-
-  const totalEstimate = Number(
-    (subtotal + shippingEstimate + taxEstimate).toFixed(2)
-  );
-
+  const safeSubtotal = Number(subtotal.toFixed(2));
   return {
-    merchandiseSubtotal: Number(subtotal.toFixed(2)),
-    shippingEstimate,
-    taxEstimate,
-    totalEstimate,
+    merchandiseSubtotal: safeSubtotal,
+    shippingEstimate: 0.0,
+    taxEstimate: 0.0,
+    totalEstimate: safeSubtotal,
   };
 }
