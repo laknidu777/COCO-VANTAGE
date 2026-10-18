@@ -32,6 +32,7 @@ export const metadata: Metadata = {
 };
 
 import { CartProvider } from "@/lib/cart-context";
+import { CustomerAuthProvider } from "@/lib/customer-auth";
 
 export default function RootLayout({
   children,
@@ -45,9 +46,11 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground tracking-tight" suppressHydrationWarning>
-        <CartProvider>
-          {children}
-        </CartProvider>
+        <CustomerAuthProvider>
+          <CartProvider>
+            {children}
+          </CartProvider>
+        </CustomerAuthProvider>
       </body>
     </html>
   );

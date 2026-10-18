@@ -1,14 +1,16 @@
 "use client";
 
-import { type ProductCategory, CATEGORIES } from "@/lib/data/products";
-
 interface CategoryFilterProps {
-  selectedCategory: "All Products" | ProductCategory;
-  onSelectCategory: (category: "All Products" | ProductCategory) => void;
+  categories?: string[];
+  selectedCategory: string;
+  onSelectCategory: (category: string) => void;
   categoryCounts?: Record<string, number>;
 }
 
+const DEFAULT_CATEGORIES = ["All Products", "Powder", "Sticks", "Blends"];
+
 export function CategoryFilter({
+  categories = DEFAULT_CATEGORIES,
   selectedCategory,
   onSelectCategory,
   categoryCounts,
@@ -19,7 +21,7 @@ export function CategoryFilter({
       aria-label="Filter products by category"
       className="flex flex-wrap items-center gap-2 sm:gap-3"
     >
-      {CATEGORIES.map((category) => {
+      {categories.map((category) => {
         const isActive = selectedCategory === category;
         const count = categoryCounts ? categoryCounts[category] : undefined;
 

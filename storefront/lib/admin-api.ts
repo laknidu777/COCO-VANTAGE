@@ -12,19 +12,12 @@ import {
   ProductStatus,
 } from './admin-types';
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-const API_PREFIX = '/api/v1';
+import { apiClient, ApiError, API_PREFIX } from './api-client';
 
-export class AdminApiError extends Error {
-  statusCode: number;
-  data?: unknown;
-
+export class AdminApiError extends ApiError {
   constructor(message: string, statusCode: number, data?: unknown) {
-    super(message);
+    super(message, statusCode, data);
     this.name = 'AdminApiError';
-    this.statusCode = statusCode;
-    this.data = data;
   }
 }
 
@@ -33,54 +26,22 @@ async function request<T>(
   options: RequestInit = {},
   token?: string | null,
 ): Promise<T> {
-  const url = `${API_BASE_URL}${path}`;
-  const headers = new Headers(options.headers || {});
-
-  headers.set('Accept', 'application/json');
-
-  if (options.body && !(options.body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  if (token) {
-    headers.set('Authorization', `Bearer ${token}`);
-  }
-
   try {
-    const response = await fetch(url, {
+    return await apiClient.request<T>(path, {
       ...options,
-      headers,
+      token,
     });
-
-    const isJson = response.headers
-      .get('content-type')
-      ?.includes('application/json');
-    const data = isJson ? await response.json() : null;
-
-    if (!response.ok) {
-      let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-      if (data && typeof data === 'object') {
-        const payload = data as { message?: string | string[]; error?: string };
-        if (Array.isArray(payload.message)) {
-          errorMessage = payload.message.join(', ');
-        } else if (payload.message) {
-          errorMessage = payload.message;
-        } else if (payload.error) {
-          errorMessage = payload.error;
-        }
-      }
-      throw new AdminApiError(errorMessage, response.status, data);
-    }
-
-    return data as T;
   } catch (error) {
     if (error instanceof AdminApiError) {
       throw error;
     }
+    if (error instanceof ApiError) {
+      throw new AdminApiError(error.message, error.statusCode, error.data);
+    }
     const message =
       error instanceof Error ? error.message : 'Network request failed';
     throw new AdminApiError(
-      `Cannot connect to backend service (${message}). Ensure backend is active at ${API_BASE_URL}.`,
+      `Cannot connect to backend service (${message}).`,
       0,
     );
   }

@@ -1,38 +1,44 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  type DemonstrationProduct,
-  type ProductCategory,
-  type SortOption,
-} from "@/lib/data/products";
+import { type StoreProduct, type StoreCategory } from "@/lib/store-api";
+import { type SortOption } from "@/lib/data/products";
 import { CategoryFilter } from "@/components/products/CategoryFilter";
 import { ProductSort } from "@/components/products/ProductSort";
 import { ProductGrid } from "@/components/products/ProductGrid";
 
 interface ShopCollectionClientProps {
-  initialProducts: DemonstrationProduct[];
+  initialProducts: StoreProduct[];
+  categories?: StoreCategory[];
 }
 
 export function ShopCollectionClient({
   initialProducts,
+  categories = [],
 }: ShopCollectionClientProps) {
-  const [selectedCategory, setSelectedCategory] = useState<
-    "All Products" | ProductCategory
-  >("All Products");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Products");
   const [selectedSort, setSelectedSort] = useState<SortOption>("featured");
+
+  // Derive all unique category names dynamically
+  const categoryNames = useMemo(() => {
+    const names = new Set<string>();
+    names.add("All Products");
+    categories.forEach((c) => names.add(c.name));
+    initialProducts.forEach((p) => {
+      if (p.category) names.add(p.category);
+    });
+    return Array.from(names);
+  }, [categories, initialProducts]);
 
   // Calculate live category counts based on full dataset
   const categoryCounts = useMemo(() => {
     const counts: Record<string, number> = {
       "All Products": initialProducts.length,
-      Powder: 0,
-      Sticks: 0,
-      Blends: 0,
     };
+
     for (const p of initialProducts) {
-      if (counts[p.category] !== undefined) {
-        counts[p.category] += 1;
+      if (p.category) {
+        counts[p.category] = (counts[p.category] || 0) + 1;
       }
     }
     return counts;
@@ -57,7 +63,6 @@ export function ShopCollectionClient({
           return a.name.localeCompare(b.name);
         case "featured":
         default:
-          // Featured items first, then fallback to original order
           if (a.featured === b.featured) {
             return 0;
           }
@@ -73,6 +78,7 @@ export function ShopCollectionClient({
       {/* Controls Bar: Category Filter & Sort */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#E5E5E5]">
         <CategoryFilter
+          categories={categoryNames}
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
           categoryCounts={categoryCounts}

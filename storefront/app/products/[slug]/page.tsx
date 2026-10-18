@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ChevronRight, ArrowLeft, ShieldCheck, Truck, RotateCcw } from "lucide-react";
-import { DEMO_PRODUCTS } from "@/lib/data/products";
+import { storeApi } from "@/lib/store-api";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
@@ -17,38 +17,51 @@ interface ProductDetailPageProps {
   }>;
 }
 
-export async function generateStaticParams() {
-  return DEMO_PRODUCTS.map((product) => ({
-    slug: product.slug,
-  }));
-}
-
 export async function generateMetadata({
   params,
 }: ProductDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = DEMO_PRODUCTS.find((p) => p.slug === slug);
+  try {
+    const product = await storeApi.getProductBySlug(slug);
 
-  if (!product) {
+    if (!product) {
+      return {
+        title: "Product Not Found",
+      };
+    }
+
     return {
-      title: "Product Not Found",
+      title: `${product.name} | COCO-VANTAGE`,
+      description: product.description || product.shortDescription,
+    };
+  } catch {
+    return {
+      title: "Product | COCO-VANTAGE",
     };
   }
-
-  return {
-    title: `${product.name} | COCO-VANTAGE`,
-    description: product.description,
-  };
 }
 
-// Inner component wrapped in Suspense so URL params read does not de-optimize the instant shell
 async function ProductDetailContent({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = DEMO_PRODUCTS.find((p) => p.slug === slug);
+  let product = null;
+  let allProducts: import("@/lib/store-api").StoreProduct[] = [];
+
+  try {
+    const [productResult, catalogResult] = await Promise.all([
+      storeApi.getProductBySlug(slug),
+      storeApi.getProducts({ limit: 8 }),
+    ]);
+
+    product = productResult;
+    allProducts = catalogResult.products;
+  } catch (err) {
+    // If backend is unavailable or product throws
+    console.error("Failed to fetch product:", err);
+  }
 
   if (!product) {
     notFound();
@@ -115,9 +128,20 @@ async function ProductDetailContent({
                   <span className="inline-block border border-[#111111] bg-white px-2.5 py-0.5 text-[10px] font-mono uppercase tracking-widest text-[#111111]">
                     {product.category}
                   </span>
-                  <span className="text-[11px] font-mono text-[#777777] uppercase tracking-wider">
-                    SPEC · {product.weight}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] font-mono text-[#777777] uppercase tracking-wider">
+                      SPEC · {product.weight}
+                    </span>
+                    <span
+                      className={`text-[10px] font-mono uppercase px-2 py-0.5 border ${
+                        product.isAvailable
+                          ? "border-green-600 text-green-700 bg-green-50"
+                          : "border-red-400 text-red-600 bg-red-50"
+                      }`}
+                    >
+                      {product.isAvailable ? "In Stock" : "Sold Out"}
+                    </span>
+                  </div>
                 </div>
 
                 <h1 className="text-3xl sm:text-4xl lg:text-5xl font-light uppercase tracking-tight text-[#111111]">
@@ -130,7 +154,7 @@ async function ProductDetailContent({
 
                 <div className="pt-2">
                   <span className="text-2xl font-mono font-medium text-[#111111]">
-                    ${product.price.toFixed(2)}{" "}
+                    {product.formattedPrice}{" "}
                     <span className="text-xs font-normal text-[#777777]">
                       {product.currency}
                     </span>
@@ -239,11 +263,6 @@ async function ProductDetailContent({
                   </p>
                 </div>
               </div>
-
-              {/* Demonstration Notice */}
-              <div className="border border-[#E5E5E5] bg-[#FFFFFF] p-4 text-[11px] font-mono text-[#777777] leading-relaxed">
-                [DEMONSTRATION CONCEPT] · Specifications and prices are provisional prototypes for architectural evaluation.
-              </div>
             </div>
           </div>
         </div>
@@ -253,7 +272,7 @@ async function ProductDetailContent({
       <RelatedProducts
         currentProductId={product.id}
         category={product.category}
-        allProducts={DEMO_PRODUCTS}
+        allProducts={allProducts}
       />
     </>
   );
@@ -283,10 +302,7 @@ export default function ProductDetailPage({
 }: ProductDetailPageProps) {
   return (
     <div className="flex min-h-screen flex-col bg-[#F5F5F2] text-[#111111] antialiased">
-      {/* 1. Global Announcement Bar */}
       <AnnouncementBar />
-
-      {/* 2. Global Navigation */}
       <Navigation />
 
       <main className="flex-1">
@@ -295,7 +311,6 @@ export default function ProductDetailPage({
         </Suspense>
       </main>
 
-      {/* Global Footer */}
       <Footer />
     </div>
   );

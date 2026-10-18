@@ -1,8 +1,12 @@
+import { Suspense } from "react";
 import { AnnouncementBar } from "@/components/announcement-bar";
 import { Navigation } from "@/components/navigation";
 import { Hero } from "@/components/hero";
 import { BrandStatement } from "@/components/brand-statement";
-import { FeaturedCollection } from "@/components/featured-collection";
+import {
+  FeaturedCollection,
+  FeaturedCollectionSkeleton,
+} from "@/components/featured-collection";
 import { ProcessSection } from "@/components/process-section";
 import { ClosingCta } from "@/components/closing-cta";
 import { Footer } from "@/components/footer";
@@ -24,7 +28,9 @@ export default function Home() {
         <BrandStatement />
 
         {/* 5. Featured collection */}
-        <FeaturedCollection />
+        <Suspense fallback={<FeaturedCollectionSkeleton />}>
+          <FeaturedCollection />
+        </Suspense>
 
         {/* 6. Process section */}
         <ProcessSection />

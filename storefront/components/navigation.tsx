@@ -4,10 +4,12 @@ import { useState } from "react";
 import Link from "next/link";
 import { Search, User, ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useCustomerAuth } from "@/lib/customer-auth";
 
 export function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { totalCount } = useCart();
+  const { isAuthenticated, customer } = useCustomerAuth();
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-[#F5F5F2]/90 backdrop-blur-md border-b border-[#E5E5E5] transition-all">
@@ -59,13 +61,16 @@ export function Navigation() {
           >
             <Search className="size-4.5" />
           </button>
-          <button
-            type="button"
-            aria-label="Account sign in"
-            className="p-1.5 text-[#111111] hover:text-[#777777] transition-colors"
+          <Link
+            href={isAuthenticated ? "/account" : "/login"}
+            aria-label={isAuthenticated ? `Customer Account (${customer?.email})` : "Account sign in"}
+            className="relative p-1.5 text-[#111111] hover:text-[#777777] transition-colors"
           >
             <User className="size-4.5" />
-          </button>
+            {isAuthenticated && (
+              <span className="absolute top-1 right-1 size-1.5 rounded-full bg-[#111111]" />
+            )}
+          </Link>
           <Link
             href="/cart"
             aria-label={`Shopping bag, ${totalCount} items`}
@@ -102,25 +107,35 @@ export function Navigation() {
               Shop
             </Link>
             <Link
-              href="#story"
+              href="/#story"
               onClick={() => setMobileMenuOpen(false)}
               className="text-[#111111] hover:text-[#777777] transition-colors py-1"
             >
               Our Story
             </Link>
             <Link
-              href="#process"
+              href="/#process"
               onClick={() => setMobileMenuOpen(false)}
               className="text-[#111111] hover:text-[#777777] transition-colors py-1"
             >
               The Process
             </Link>
             <Link
-              href="#contact"
+              href="/#contact"
               onClick={() => setMobileMenuOpen(false)}
               className="text-[#111111] hover:text-[#777777] transition-colors py-1"
             >
               Contact
+            </Link>
+            <Link
+              href={isAuthenticated ? "/account" : "/login"}
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-[#111111] hover:text-[#777777] transition-colors py-1 flex items-center justify-between border-t border-[#E5E5E5] pt-3"
+            >
+              <span>{isAuthenticated ? "My Account" : "Sign In"}</span>
+              {isAuthenticated && (
+                <span className="text-[10px] font-mono text-[#777777]">Active</span>
+              )}
             </Link>
           </div>
           <div className="pt-4 border-t border-[#E5E5E5] text-[11px] font-mono uppercase text-[#777777]">

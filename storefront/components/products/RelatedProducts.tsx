@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { DemonstrationProduct } from "@/lib/data/products";
+import { type StoreProduct } from "@/lib/store-api";
 import { ProductCard } from "@/components/products/ProductCard";
 
 interface RelatedProductsProps {
   currentProductId: string;
   category: string;
-  allProducts: DemonstrationProduct[];
+  allProducts: StoreProduct[];
 }
 
 export function RelatedProducts({

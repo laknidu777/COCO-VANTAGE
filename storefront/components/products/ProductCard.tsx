@@ -1,14 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { type DemonstrationProduct } from "@/lib/data/products";
+import { type StoreProduct } from "@/lib/store-api";
 
 interface ProductCardProps {
-  product: DemonstrationProduct;
+  product: StoreProduct;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const formattedPrice = `$${product.price.toFixed(2)}`;
+  const formattedPrice = product.formattedPrice || `$${product.price.toFixed(2)}`;
 
   return (
     <article className="group flex flex-col justify-between border border-[#E5E5E5] bg-[#FFFFFF] transition-all duration-300 hover:border-[#111111] hover:shadow-xs">
@@ -17,7 +17,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="relative aspect-square w-full overflow-hidden bg-[#F5F5F2] border-b border-[#E5E5E5]">
           <Image
             src={product.image}
-            alt={product.alt}
+            alt={product.alt || product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
             className="object-cover object-center grayscale transition-transform duration-700 ease-out group-hover:scale-105"
@@ -54,11 +54,11 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Card Action & Demonstration Note */}
+      {/* Card Action & Availability Note */}
       <div className="p-6 pt-0 mt-4 border-t border-[#E5E5E5]/60 flex flex-col gap-3">
         <div className="pt-3 flex items-center justify-between">
           <span className="text-[10px] font-mono uppercase tracking-wider text-[#777777]">
-            [Demo Price · USD]
+            {product.isAvailable ? `[${product.currency} · In Stock]` : `[Sold Out]`}
           </span>
           <Link
             href={`/products/${product.slug}`}
