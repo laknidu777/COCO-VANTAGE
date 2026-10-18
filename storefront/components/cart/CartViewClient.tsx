@@ -2,17 +2,17 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Minus, Plus, Trash2, ArrowRight } from "lucide-react";
-import { useCart, CartItem } from "@/lib/cart-context";
+import { Minus, Plus, Trash2, ArrowRight, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { useCart, UnifiedCartItem } from "@/lib/cart-context";
 
 interface CartItemRowProps {
-  item: CartItem;
+  item: UnifiedCartItem;
+  isMutating: boolean;
 }
 
-export function CartItemRow({ item }: CartItemRowProps) {
+export function CartItemRow({ item, isMutating }: CartItemRowProps) {
   const { updateQuantity, removeItem } = useCart();
-  const { product, quantity } = item;
-  const itemTotal = (product.price * quantity).toFixed(2);
+  const { product, quantity, formattedUnitPrice, formattedLineTotal, stockQuantity, available } = item;
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 py-6 border-b border-[#E5E5E5] last:border-b-0">
@@ -23,8 +23,8 @@ export function CartItemRow({ item }: CartItemRowProps) {
           className="relative size-20 sm:size-24 shrink-0 overflow-hidden border border-[#E5E5E5] bg-[#FFFFFF] group"
         >
           <Image
-            src={product.image}
-            alt={product.alt}
+            src={item.image}
+            alt={item.alt}
             fill
             sizes="96px"
             className="object-cover object-center grayscale transition-transform duration-500 group-hover:scale-105"
@@ -32,9 +32,17 @@ export function CartItemRow({ item }: CartItemRowProps) {
         </Link>
 
         <div className="space-y-1 min-w-0 flex-1">
-          <span className="inline-block text-[9px] font-mono uppercase tracking-widest text-[#777777]">
-            {product.category} · {product.weight}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="inline-block text-[9px] font-mono uppercase tracking-widest text-[#777777]">
+              {item.sku ? `SKU · ${item.sku}` : "BOTANICAL FORMULATION"}
+            </span>
+            {!available && (
+              <span className="inline-block text-[9px] font-mono uppercase px-1.5 py-0.2 border border-red-400 bg-red-50 text-red-600">
+                Unavailable
+              </span>
+            )}
+          </div>
+
           <h3 className="text-sm font-semibold uppercase tracking-wider text-[#111111] truncate">
             <Link
               href={`/products/${product.slug}`}
@@ -43,9 +51,20 @@ export function CartItemRow({ item }: CartItemRowProps) {
               {product.name}
             </Link>
           </h3>
+
           <p className="text-xs font-mono text-[#777777]">
-            Unit Price: ${product.price.toFixed(2)} {product.currency}
+            {item.variantName}
           </p>
+
+          <p className="text-xs font-mono text-[#777777]">
+            Unit Price: {formattedUnitPrice} {item.currency}
+          </p>
+
+          {stockQuantity <= 5 && stockQuantity > 0 && (
+            <p className="text-[10px] font-mono text-amber-700">
+              Only {stockQuantity} unit(s) remaining in batch.
+            </p>
+          )}
         </div>
       </div>
 
@@ -55,21 +74,22 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <div className="flex items-center border border-[#111111] bg-white h-10 px-3">
           <button
             type="button"
-            onClick={() => updateQuantity(product.id, quantity - 1)}
-            disabled={quantity <= 1}
+            onClick={() => updateQuantity(item.id, quantity - 1)}
+            disabled={quantity <= 1 || isMutating}
             aria-label={`Decrease quantity of ${product.name}`}
             className="p-1 text-[#111111] disabled:opacity-30 disabled:cursor-not-allowed hover:text-[#777777] transition-colors cursor-pointer"
           >
             <Minus className="size-3.5" />
           </button>
-          <span className="font-mono text-xs font-semibold text-[#111111] px-3 select-none">
+          <span className="font-mono text-xs font-semibold text-[#111111] px-3 select-none min-w-[20px] text-center">
             {quantity}
           </span>
           <button
             type="button"
-            onClick={() => updateQuantity(product.id, quantity + 1)}
+            onClick={() => updateQuantity(item.id, quantity + 1)}
+            disabled={quantity >= stockQuantity || isMutating}
             aria-label={`Increase quantity of ${product.name}`}
-            className="p-1 text-[#111111] hover:text-[#777777] transition-colors cursor-pointer"
+            className="p-1 text-[#111111] disabled:opacity-30 disabled:cursor-not-allowed hover:text-[#777777] transition-colors cursor-pointer"
           >
             <Plus className="size-3.5" />
           </button>
@@ -78,16 +98,17 @@ export function CartItemRow({ item }: CartItemRowProps) {
         {/* Item Subtotal */}
         <div className="text-right min-w-[80px]">
           <span className="text-sm font-mono font-semibold text-[#111111]">
-            ${itemTotal}
+            {formattedLineTotal}
           </span>
         </div>
 
         {/* Remove Button */}
         <button
           type="button"
-          onClick={() => removeItem(product.id)}
+          onClick={() => removeItem(item.id)}
+          disabled={isMutating}
           aria-label={`Remove ${product.name} from cart`}
-          className="p-2 text-[#777777] hover:text-[#111111] transition-colors cursor-pointer"
+          className="p-2 text-[#777777] hover:text-[#111111] disabled:opacity-30 transition-colors cursor-pointer"
         >
           <Trash2 className="size-4" />
         </button>
@@ -97,14 +118,21 @@ export function CartItemRow({ item }: CartItemRowProps) {
 }
 
 export function OrderSummary() {
-  const { subtotal, totalCount } = useCart();
-  const formattedSubtotal = `$${subtotal.toFixed(2)}`;
+  const { formattedSubtotal, totalCount, isMutating } = useCart();
 
   return (
     <div className="border border-[#E5E5E5] bg-white p-6 sm:p-8 space-y-6">
-      <h2 className="text-xs font-mono uppercase tracking-[0.2em] text-[#111111] border-b border-[#E5E5E5] pb-4">
-        Order Summary
-      </h2>
+      <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-4">
+        <h2 className="text-xs font-mono uppercase tracking-[0.2em] text-[#111111]">
+          Order Summary
+        </h2>
+        {isMutating && (
+          <div className="flex items-center gap-1.5 text-[10px] font-mono text-[#777777]">
+            <Loader2 className="size-3 animate-spin" />
+            <span>Syncing...</span>
+          </div>
+        )}
+      </div>
 
       <div className="space-y-3.5 text-xs">
         <div className="flex justify-between items-center text-[#777777]">
@@ -170,8 +198,39 @@ export function OrderSummary() {
   );
 }
 
+function CartSkeleton() {
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 animate-pulse">
+      <div className="lg:col-span-8 space-y-6">
+        <div className="h-6 w-48 bg-[#E5E5E5]" />
+        <div className="border border-[#E5E5E5] bg-white p-6 space-y-6">
+          {[1, 2].map((i) => (
+            <div key={i} className="flex gap-6 items-center">
+              <div className="size-24 bg-[#E5E5E5] shrink-0" />
+              <div className="space-y-3 flex-1">
+                <div className="h-4 w-1/3 bg-[#E5E5E5]" />
+                <div className="h-5 w-2/3 bg-[#E5E5E5]" />
+                <div className="h-4 w-1/4 bg-[#E5E5E5]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="lg:col-span-4 border border-[#E5E5E5] bg-white p-8 space-y-6">
+        <div className="h-5 w-32 bg-[#E5E5E5]" />
+        <div className="h-24 bg-[#E5E5E5]" />
+        <div className="h-12 bg-[#E5E5E5]" />
+      </div>
+    </div>
+  );
+}
+
 export function CartViewClient() {
-  const { items, totalCount, clearCart } = useCart();
+  const { items, totalCount, clearCart, isLoading, isMutating, error, clearError, refreshCart } = useCart();
+
+  if (isLoading) {
+    return <CartSkeleton />;
+  }
 
   if (items.length === 0) {
     return (
@@ -207,32 +266,62 @@ export function CartViewClient() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-      {/* Product List */}
-      <div className="lg:col-span-8 space-y-6">
-        <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-4">
-          <span className="text-xs font-mono uppercase tracking-widest text-[#777777]">
-            Items in Selection ({totalCount})
-          </span>
-          <button
-            type="button"
-            onClick={clearCart}
-            className="text-xs font-mono uppercase tracking-widest text-[#777777] hover:text-[#111111] transition-colors cursor-pointer"
-          >
-            Clear All
-          </button>
+    <div className="space-y-6">
+      {/* Error Banner */}
+      {error && (
+        <div className="flex items-center justify-between border border-red-300 bg-red-50 p-4 text-xs text-red-700">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="size-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={refreshCart}
+              className="inline-flex items-center gap-1 font-mono uppercase underline hover:no-underline cursor-pointer"
+            >
+              <RefreshCw className="size-3" />
+              <span>Retry</span>
+            </button>
+            <button
+              type="button"
+              onClick={clearError}
+              className="font-mono uppercase underline hover:no-underline cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        {/* Product List */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="flex items-center justify-between border-b border-[#E5E5E5] pb-4">
+            <span className="text-xs font-mono uppercase tracking-widest text-[#777777]">
+              Items in Selection ({totalCount})
+            </span>
+            <button
+              type="button"
+              onClick={clearCart}
+              disabled={isMutating}
+              className="text-xs font-mono uppercase tracking-widest text-[#777777] hover:text-[#111111] disabled:opacity-30 transition-colors cursor-pointer"
+            >
+              Clear All
+            </button>
+          </div>
+
+          <div className="border border-[#E5E5E5] bg-white px-6">
+            {items.map((item) => (
+              <CartItemRow key={item.id} item={item} isMutating={isMutating} />
+            ))}
+          </div>
         </div>
 
-        <div className="border border-[#E5E5E5] bg-white px-6">
-          {items.map((item) => (
-            <CartItemRow key={item.product.id} item={item} />
-          ))}
+        {/* Order Summary */}
+        <div className="lg:col-span-4 sticky top-28">
+          <OrderSummary />
         </div>
-      </div>
-
-      {/* Order Summary */}
-      <div className="lg:col-span-4 sticky top-28">
-        <OrderSummary />
       </div>
     </div>
   );
