@@ -73,14 +73,16 @@ export function isValidStripeCheckoutUrl(urlStr: string): boolean {
 
 export const checkoutApi = {
   /**
-   * Creates a pending order from the guest cart identified by the X-Cart-Token header.
+   * Creates a pending order from the cart identified by X-Cart-Token, optionally linked to an authenticated customer.
    */
   async createOrder(
     payload: CreateOrderPayload,
     cartToken: string,
+    customerToken?: string,
   ): Promise<OrderResponse> {
     return apiClient.post<OrderResponse>('/checkout/orders', payload, {
       cartToken,
+      token: customerToken,
     });
   },
 

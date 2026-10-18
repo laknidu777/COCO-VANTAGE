@@ -79,7 +79,7 @@ type CheckoutPhase =
 
 export function CheckoutViewClient() {
   const { items, subtotal, subtotalInCents, formattedSubtotal, totalCount, token, isLoading: isCartLoading, refreshCart } = useCart();
-  const { customer, isAuthenticated } = useCustomerAuth();
+  const { customer, isAuthenticated, token: customerToken } = useCustomerAuth();
 
   const [formData, setFormData] = useState<CheckoutFormData>(INITIAL_FORM_STATE);
   const [errors, setErrors] = useState<FormErrors>({});
@@ -265,8 +265,12 @@ export function CheckoutViewClient() {
     let order: OrderResponse;
 
     try {
-      // Step 1: Create Order
-      order = await checkoutApi.createOrder(orderPayload, token);
+      // Step 1: Create Order (linking to customer account if authenticated)
+      order = await checkoutApi.createOrder(
+        orderPayload,
+        token,
+        customerToken || undefined,
+      );
       setCreatedOrder(order);
       // Synchronize cart state since backend cleared cart items
       refreshCart().catch(() => {});

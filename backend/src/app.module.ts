@@ -10,6 +10,7 @@ import { CartModule } from './cart/cart.module';
 import { AdminOrdersModule } from './admin/orders/admin-orders.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { StripeModule } from './stripe/stripe.module';
+import { CustomerOrdersModule } from './customer/orders/customer-orders.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -23,6 +24,7 @@ import { StripeModule } from './stripe/stripe.module';
     AdminOrdersModule,
     CheckoutModule,
     StripeModule,
+    CustomerOrdersModule,
   ],
 })
 export class AppModule { }

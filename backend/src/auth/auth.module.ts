@@ -38,6 +38,6 @@ import { CustomerGuard } from './guards/customer.guard';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, RolesGuard, CustomerGuard],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule, CustomerGuard, RolesGuard],
 })
 export class AuthModule {}

@@ -21,7 +21,11 @@ export class CheckoutService {
   private readonly stripeService: StripeService,
 ) {}
 
-  async createOrder(token: string, dto: CreateOrderDto) {
+  async createOrder(
+    token: string,
+    dto: CreateOrderDto,
+    userId?: string | null,
+  ) {
     if (!token || token.length !== 64 || !/^[a-f0-9]+$/i.test(token)) {
       throw new NotFoundException('Cart not found.');
     }
@@ -152,6 +156,7 @@ export class CheckoutService {
 
           const order = await tx.order.create({
             data: {
+              userId: userId ?? null,
               orderNumber: `CV-${Date.now()}-${randomUUID()
                 .slice(0, 8)
                 .toUpperCase()}`,

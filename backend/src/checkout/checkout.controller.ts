@@ -14,12 +14,14 @@ import { CheckoutService } from './checkout.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Param, ParseUUIDPipe } from '@nestjs/common';
 import { CreatePaymentSessionDto } from './dto/create-payment-session.dto';
+import { JwtService } from '@nestjs/jwt';
 
 @ApiTags('Checkout')
 @Controller('checkout')
 export class CheckoutController {
   constructor(
     private readonly checkoutService: CheckoutService,
+    private readonly jwtService: JwtService,
   ) {}
 
   @Post('orders')
@@ -33,9 +35,22 @@ export class CheckoutController {
   })
   createOrder(
     @Headers('x-cart-token') token: string | undefined,
+    @Headers('authorization') authHeader: string | undefined,
     @Body() dto: CreateOrderDto,
   ) {
-    return this.checkoutService.createOrder(token ?? '', dto);
+    let customerUserId: string | null = null;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const jwtToken = authHeader.slice(7).trim();
+      try {
+        const payload = this.jwtService.verify(jwtToken);
+        if (payload && payload.role === 'CUSTOMER' && payload.sub) {
+          customerUserId = payload.sub;
+        }
+      } catch {
+        // Fall back gracefully to guest checkout if token is invalid or expired
+      }
+    }
+    return this.checkoutService.createOrder(token ?? '', dto, customerUserId);
   }
 
   @Post('orders/:orderId/payment-session')
