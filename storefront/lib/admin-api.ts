@@ -11,6 +11,8 @@ import {
   PaginatedResponse,
   ProductStatus,
   UpdateProductPayload,
+  ApiCustomerDetail,
+  PaginatedCustomersResponse,
 } from './admin-types';
 
 import { apiClient, ApiError, API_PREFIX } from './api-client';
@@ -237,6 +239,51 @@ export const adminApi = {
       {
         method: 'PATCH',
         body: JSON.stringify({ status }),
+      },
+      token,
+    );
+  },
+
+  // Customers (Admin endpoints)
+  async getCustomers(
+    token: string,
+    params: { page?: number; limit?: number; search?: string } = {},
+  ): Promise<PaginatedCustomersResponse> {
+    const query = new URLSearchParams();
+    if (params.page) query.set('page', params.page.toString());
+    if (params.limit) query.set('limit', params.limit.toString());
+    if (params.search && params.search.trim()) {
+      query.set('search', params.search.trim());
+    }
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    return request<PaginatedCustomersResponse>(
+      `${API_PREFIX}/admin/customers${queryString}`,
+      { method: 'GET' },
+      token,
+    );
+  },
+
+  async getCustomerById(
+    token: string,
+    id: string,
+  ): Promise<ApiCustomerDetail> {
+    return request<ApiCustomerDetail>(
+      `${API_PREFIX}/admin/customers/${id}`,
+      { method: 'GET' },
+      token,
+    );
+  },
+
+  async updateCustomerStatus(
+    token: string,
+    id: string,
+    isActive: boolean,
+  ): Promise<{ id: string; email: string; isActive: boolean }> {
+    return request<{ id: string; email: string; isActive: boolean }>(
+      `${API_PREFIX}/admin/customers/${id}/status`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify({ isActive }),
       },
       token,
     );

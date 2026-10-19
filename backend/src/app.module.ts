@@ -11,6 +11,7 @@ import { AdminOrdersModule } from './admin/orders/admin-orders.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { StripeModule } from './stripe/stripe.module';
 import { CustomerOrdersModule } from './customer/orders/customer-orders.module';
+import { AdminCustomersModule } from './admin/customers/admin-customers.module';
 @Module({
   imports: [
     AppConfigModule,
@@ -22,6 +23,7 @@ import { CustomerOrdersModule } from './customer/orders/customer-orders.module';
     AdminProductsModule,
     CartModule,
     AdminOrdersModule,
+    AdminCustomersModule,
     CheckoutModule,
     StripeModule,
     CustomerOrdersModule,

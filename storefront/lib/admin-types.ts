@@ -229,3 +229,80 @@ export interface UpdateProductPayload {
   imageUrl?: string;
 }
 
+export interface ApiCustomerSummary {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  location: string | null;
+  isActive: boolean;
+  role: string;
+  createdAt: string;
+  ordersCount: number;
+  totalSpent: number; // in cents
+  lastOrderAt: string | null;
+}
+
+export interface ApiCustomerStats {
+  totalCustomers: number;
+  activeCustomers: number;
+  totalRevenue: number;
+  repeatCustomers: number;
+}
+
+export interface PaginatedCustomersResponse {
+  data: ApiCustomerSummary[];
+  pagination: PaginationMeta;
+  stats: ApiCustomerStats;
+}
+
+export interface CustomerShippingAddress {
+  firstName?: string;
+  lastName?: string;
+  address1?: string;
+  address2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  country?: string;
+}
+
+export interface CustomerDetailOrder {
+  id: string;
+  orderNumber: string;
+  totalAmount: number;
+  currency: string;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  createdAt: string;
+  itemsCount: number;
+  items: Array<{
+    productName: string;
+    variantName: string;
+    sku: string;
+    quantity: number;
+    lineTotal: number;
+  }>;
+}
+
+export interface ApiCustomerDetail {
+  id: string;
+  email: string;
+  name: string;
+  phone: string | null;
+  isActive: boolean;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+  metrics: {
+    totalOrders: number;
+    totalSpent: number;
+    averageOrderValue: number;
+    firstOrderAt: string | null;
+    lastOrderAt: string | null;
+  };
+  primaryAddress: CustomerShippingAddress | null;
+  savedAddresses: CustomerShippingAddress[];
+  orders: CustomerDetailOrder[];
+}
+

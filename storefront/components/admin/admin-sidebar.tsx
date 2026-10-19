@@ -50,7 +50,6 @@ const NAV_ITEMS: NavItem[] = [
     title: 'Customers',
     href: '/admin/customers',
     icon: Users,
-    badge: 'Demo',
   },
   {
     title: 'Settings',
