@@ -1,12 +1,17 @@
 
 import {
   IsBoolean,
+  IsEnum,
+  IsInt,
+  IsNumber,
   IsOptional,
   IsString,
   IsUUID,
   MaxLength,
+  Min,
   MinLength,
 } from 'class-validator';
+import { ProductStatus } from '@prisma/client';
 
 export class CreateProductDto {
   @IsString()
@@ -37,6 +42,10 @@ export class CreateProductDto {
   isFeatured?: boolean;
 
   @IsOptional()
+  @IsEnum(ProductStatus)
+  status?: ProductStatus;
+
+  @IsOptional()
   @IsString()
   @MaxLength(70)
   seoTitle?: string;
@@ -45,4 +54,29 @@ export class CreateProductDto {
   @IsString()
   @MaxLength(170)
   seoDescription?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sellingPrice?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  buyingPrice?: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  stockQuantity?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(80)
+  sku?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2048)
+  imageUrl?: string;
 }

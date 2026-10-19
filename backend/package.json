@@ -20,6 +20,7 @@
     "prisma:migrate:dev": "dotenv -e ../.env -- prisma migrate dev --schema=../prisma/schema.prisma",
     "prisma:migrate:deploy": "dotenv -e ../.env -- prisma migrate deploy --schema=../prisma/schema.prisma",
     "prisma:studio": "dotenv -e ../.env -- prisma studio --schema=../prisma/schema.prisma",
+    "admin:create": "ts-node scripts/create-super-admin.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

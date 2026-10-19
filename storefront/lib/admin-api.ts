@@ -10,6 +10,7 @@ import {
   OrderStatus,
   PaginatedResponse,
   ProductStatus,
+  UpdateProductPayload,
 } from './admin-types';
 
 import { apiClient, ApiError, API_PREFIX } from './api-client';
@@ -120,6 +121,68 @@ export const adminApi = {
       {
         method: 'PATCH',
         body: JSON.stringify({ status }),
+      },
+      token,
+    );
+  },
+
+  async updateProduct(
+    token: string,
+    id: string,
+    payload: UpdateProductPayload,
+  ): Promise<ApiProduct> {
+    return request<ApiProduct>(
+      `${API_PREFIX}/admin/products/${id}`,
+      {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      },
+      token,
+    );
+  },
+
+  async deleteProduct(
+    token: string,
+    id: string,
+  ): Promise<{ message: string; id: string }> {
+    return request<{ message: string; id: string }>(
+      `${API_PREFIX}/admin/products/${id}`,
+      {
+        method: 'DELETE',
+      },
+      token,
+    );
+  },
+
+  async addProductImage(
+    token: string,
+    productId: string,
+    payload: {
+      url: string;
+      altText?: string;
+      isPrimary?: boolean;
+      sortOrder?: number;
+    },
+  ): Promise<any> {
+    return request<any>(
+      `${API_PREFIX}/admin/products/${productId}/images`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      token,
+    );
+  },
+
+  async deleteProductImage(
+    token: string,
+    productId: string,
+    imageId: string,
+  ): Promise<{ message: string }> {
+    return request<{ message: string }>(
+      `${API_PREFIX}/admin/products/${productId}/images/${imageId}`,
+      {
+        method: 'DELETE',
       },
       token,
     );

@@ -60,6 +60,7 @@ export class AdminVariantsService {
               create: dto.prices.map((price) => ({
                 currency: price.currency.trim().toUpperCase(),
                 amount: price.amount,
+                buyingPrice: price.buyingPrice ?? null,
               })),
             },
           },

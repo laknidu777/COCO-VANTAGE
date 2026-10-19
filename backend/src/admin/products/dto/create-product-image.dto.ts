@@ -5,14 +5,15 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  IsUrl,
   MaxLength,
   Min,
+  MinLength,
 } from 'class-validator';
 import { ImageType } from '@prisma/client';
 
 export class CreateProductImageDto {
-  @IsUrl({ protocols: ['https'], require_protocol: true })
+  @IsString()
+  @MinLength(1)
   @MaxLength(2048)
   url!: string;
 

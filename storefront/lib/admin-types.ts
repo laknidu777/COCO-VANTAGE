@@ -61,7 +61,8 @@ export interface ApiVariantPrice {
   id: string;
   variantId: string;
   currency: string;
-  amount: number; // in cents
+  amount: number; // in cents (selling price)
+  buyingPrice?: number | null; // in cents (cost/buying price)
   createdAt: string;
   updatedAt: string;
 }
@@ -201,6 +202,30 @@ export interface CreateProductPayload {
   shortDescription?: string;
   description?: string;
   isFeatured?: boolean;
+  status?: ProductStatus;
   seoTitle?: string;
   seoDescription?: string;
+  sellingPrice?: number;
+  buyingPrice?: number;
+  stockQuantity?: number;
+  sku?: string;
+  imageUrl?: string;
 }
+
+export interface UpdateProductPayload {
+  name?: string;
+  slug?: string;
+  categoryId?: string;
+  shortDescription?: string;
+  description?: string;
+  isFeatured?: boolean;
+  status?: ProductStatus;
+  seoTitle?: string;
+  seoDescription?: string;
+  sellingPrice?: number;
+  buyingPrice?: number;
+  stockQuantity?: number;
+  sku?: string;
+  imageUrl?: string;
+}
+

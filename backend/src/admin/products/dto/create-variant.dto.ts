@@ -21,6 +21,11 @@ class VariantPriceDto {
   @IsInt()
   @Min(0)
   amount!: number;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  buyingPrice?: number;
 }
 
 export class CreateVariantDto {

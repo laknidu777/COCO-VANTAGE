@@ -2,6 +2,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -65,5 +66,11 @@ export class AdminProductsController {
     @Body() dto: UpdateProductStatusDto,
   ) {
     return this.service.updateStatus(id, dto.status);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete a product and its variants/images' })
+  remove(@Param('id', ParseUUIDPipe) id: string) {
+    return this.service.remove(id);
   }
 }
